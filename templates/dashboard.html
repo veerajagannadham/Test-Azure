@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-brand">Retail Analytics</div>
+    <div class="navbar-links">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/upload">Upload</a>
+      
+      <a href="/analytics">Analytics</a>
+      <a href="/">Logout</a>
+    </div>
+  </nav>
+
+  {% if uploaded_table %}
+  <div class="alert-success">
+    {{ uploaded_table.capitalize() }} data uploaded successfully!
+  </div>
+  {% endif %}
+
+  <!-- Dashboard -->
+  <div class="form-box">
+    <h2>Welcome, {{ username }}</h2>
+
+    <div class="button-row">
+      <a href="/search"><button>Search Household</button></a>
+      <a href="/upload"><button>Upload Data</button></a>
+    </div>
+
+    <!-- Metrics Section -->
+    <div class="section">
+      <h3>Key Metrics</h3>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3>{{ metrics.total_transactions }}</h3>
+          <p>Total Transactions</p>
+        </div>
+        <div class="metric-card">
+          <h3>{{ metrics.unique_households }}</h3>
+          <p>Unique Households</p>
+        </div>
+        <div class="metric-card">
+          <h3>${{ metrics.total_spend }}</h3>
+          <p>Total Spend</p>
+        </div>
+        <div class="metric-card">
+          <h3>{{ metrics.total_products }}</h3>
+          <p>Unique Products</p>
+        </div>
+        <div class="metric-card">
+          <h3>${{ metrics.avg_spend_per_household|default(0) }}</h3>
+          <p>Avg Spend/Household</p>
+        </div>
+        <div class="metric-card">
+          <h3>{{ metrics.avg_transactions_per_household|default(0) }}</h3>
+          <p>Avg Transactions/Household</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="section">
+      <h3>Spend Analysis</h3>
+      <div class="chart-row">
+        <div class="chart-container">
+          <h4>Top 10 Departments by Spend</h4>
+          <canvas id="spendChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h4>Transactions by Department</h4>
+          <canvas id="transactionsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+
+  <script>
+    // Department Spend Chart
+    const spendCtx = document.getElementById('spendChart');
+    new Chart(spendCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ labels|tojson }},
+        datasets: [{
+          label: 'Spend ($)',
+          data: {{ values|tojson }},
+          backgroundColor: '#0078d7'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: false }
+        }
+      }
+    });
+
+    // Transactions Chart (example - you'll need to pass this data from your route)
+    const transCtx = document.getElementById('transactionsChart');
+    new Chart(transCtx, {
+      type: 'pie',
+      data: {
+        labels: {{ labels|tojson }},
+        datasets: [{
+          label: 'Transactions',
+          data: [10, 20, 30, 40, 50], // Replace with actual transaction counts
+          backgroundColor: [
+            '#0078d7',
+            '#50b8e7',
+            '#003366',
+            '#00a2e8',
+            '#008575'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right' },
+          title: { display: false }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

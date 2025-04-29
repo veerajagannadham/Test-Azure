@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Household</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 200px;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .results-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Exact Dashboard Navbar -->
+    <div class="navbar">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/search">Search</a>
+        <a href="/upload">Upload</a>
+        <a href="/logout" style="float:right">Logout</a>
+    </div>
+
+    <h1>Search Household Data</h1>
+    
+    <form action="{{ url_for('search') }}" method="POST">
+        <div class="form-group">
+            <label>Enter HSHD_NUM:</label>
+            <input type="text" name="hshd_num" required>
+        </div>
+        <input type="submit" value="Search">
+    </form>
+
+    {% if results %}
+        <table class="results-table">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        {% for value in row %}
+                            <td>{{ value if value is not none else '' }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <p><a href="/dashboard/">Back to Dashboard</a></p>
+</body>
+</html>
