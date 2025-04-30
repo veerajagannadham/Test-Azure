@@ -1,80 +1,445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Search Household</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"] {
-            padding: 8px;
-            width: 200px;
-        }
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .results-table th, .results-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .results-table th {
-            background-color: #f2f2f2;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Household</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #10b981;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --table-header: #f1f5f9;
+      --table-hover: #f8fafd;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+    
+    h1 {
+      text-align: center;
+      color: var(--text-primary);
+      margin-bottom: 40px;
+      font-weight: 700;
+      font-size: 28px;
+      position: relative;
+      display: inline-block;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 2px;
+    }
+    
+    .search-panel {
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 40px;
+      border: 1px solid var(--border);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    @media (min-width: 640px) {
+      .form-group {
+        flex-direction: row;
+        align-items: flex-end;
+      }
+    }
+    
+    .input-wrapper {
+      flex: 1;
+      margin-right: 0;
+      margin-bottom: 15px;
+    }
+    
+    @media (min-width: 640px) {
+      .input-wrapper {
+        margin-right: 20px;
+        margin-bottom: 0;
+      }
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      color: var(--text-primary);
+      font-weight: 500;
+      background-color: var(--card-bg);
+    }
+    
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    
+    button[type="submit"] {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+      min-width: 120px;
+    }
+    
+    button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+    }
+    
+    button[type="submit"]:active {
+      transform: translateY(0);
+    }
+    
+    button[type="submit"] svg {
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+    
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    a:hover {
+      color: var(--primary-dark);
+    }
+    
+    a svg {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
+
+    /* Results section */
+    .results-container {
+      margin-top: 40px;
+    }
+    
+    .results-title {
+      font-size: 22px;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+    
+    .results-title svg {
+      margin-right: 12px;
+      color: var(--primary);
+    }
+    
+    .household-info {
+      background-color: #f8fafc;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .household-info h3 {
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+    }
+    
+    .household-info h3 svg {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .household-info p {
+      margin: 12px 0;
+      font-size: 15px;
+      display: flex;
+    }
+    
+    .household-info strong {
+      min-width: 150px;
+      color: var(--text-secondary);
+    }
+    
+    .transactions-section h3 {
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+    }
+    
+    .transactions-section h3 svg {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .table-wrapper {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th, .data-table td {
+      padding: 14px 16px;
+      text-align: left;
+    }
+    
+    .data-table th {
+      background-color: var(--table-header);
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+    
+    .data-table tr:not(:last-child) td {
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .data-table tr:hover td {
+      background-color: var(--table-hover);
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+      background-color: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    
+    .no-results svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+    
+    .no-results p {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    /* Responsive table */
+    @media (max-width: 768px) {
+      .table-wrapper {
+        overflow-x: auto;
+      }
+      
+      .data-table {
+        min-width: 800px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Exact Dashboard Navbar -->
-    <div class="navbar">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/search">Search</a>
-        <a href="/upload">Upload</a>
-        <a href="/logout" style="float:right">Logout</a>
-    </div>
-
+  <div class="container">
     <h1>Search Household Data</h1>
     
-    <form action="{{ url_for('search') }}" method="POST">
+    <div class="search-panel">
+      <form action="{{ url_for('search') }}" method="POST">
         <div class="form-group">
-            <label>Enter HSHD_NUM:</label>
-            <input type="text" name="hshd_num" required>
+          <div class="input-wrapper">
+            <label for="hshd_num">Household Number</label>
+            <input type="text" id="hshd_num" name="hshd_num" required 
+                   placeholder="Enter household ID" value="{{ request.form.get('hshd_num', '') }}" />
+          </div>
+          
+          <button type="submit">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Search
+          </button>
         </div>
-        <input type="submit" value="Search">
-    </form>
-
-    {% if results %}
-        <table class="results-table">
+      </form>
+    </div>
+    
+    {% if household_info or transactions %}
+    <div class="results-container">
+      <h2 class="results-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        Results for Household {{ request.form.get('hshd_num', '') }}
+      </h2>
+      
+      {% if household_info %}
+      <div class="household-info">
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Household Information
+        </h3>
+        {% for key, value in household_info.items() %}
+          {% if value is not none %}
+          <p><strong>{{ key|replace('_', ' ')|title }}</strong> {{ value }}</p>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      
+      <div class="transactions-section">
+        {% if transactions %}
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          </svg>
+          Transaction History
+        </h3>
+        <div class="table-wrapper">
+          <table class="data-table">
             <thead>
-                <tr>
-                    {% for column in columns %}
-                        <th>{{ column }}</th>
-                    {% endfor %}
-                </tr>
+              <tr>
+                {% for column in transactions[0].keys() %}
+                  <th>{{ column|replace('_', ' ')|title }}</th>
+                {% endfor %}
+              </tr>
             </thead>
             <tbody>
-                {% for row in results %}
-                    <tr>
-                        {% for value in row %}
-                            <td>{{ value if value is not none else '' }}</td>
-                        {% endfor %}
-                    </tr>
+              {% for transaction in transactions %}
+              <tr>
+                {% for value in transaction.values() %}
+                  <td>
+                    {% if value is none %}
+                      -
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </td>
                 {% endfor %}
+              </tr>
+              {% endfor %}
             </tbody>
-        </table>
+          </table>
+        </div>
+        {% else %}
+        <div class="no-results">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p>No transactions found for this household.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
     {% endif %}
-
-    <p><a href="/dashboard/">Back to Dashboard</a></p>
+    
+    <p class="back-link">
+      <a href="{{ url_for('dashboard') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Dashboard
+      </a>
+    </p>
+  </div>
 </body>
 </html>

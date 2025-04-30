@@ -1,55 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Upload Data</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Data</title>
+  {{ custom_css|safe }}
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #10b981;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+    
+    h1 {
+      text-align: center;
+      color: var(--text-primary);
+      margin-bottom: 40px;
+      font-weight: 700;
+      font-size: 28px;
+      position: relative;
+      display: inline-block;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 2px;
+    }
+    
+    .form-group {
+      margin-bottom: 28px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 16px;
+      background-color: var(--card-bg);
+      transition: all 0.3s ease;
+      color: var(--text-primary);
+      font-weight: 500;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 18px;
+    }
+    
+    select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    
+    .file-input-container {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+    
+    .file-input-container:hover {
+      border-color: var(--primary);
+      background-color: rgba(99, 102, 241, 0.05);
+    }
+    
+    .file-input-container svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    
+    .file-input-container p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin: 0;
+      padding: 0 15px;
+    }
+    
+    .file-input-container strong {
+      color: var(--primary);
+    }
+    
+    input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    
+    .file-name {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: none;
+    }
+    
+    button[type="submit"] {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      padding: 16px 20px;
+      width: 100%;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+    
+    button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+    }
+    
+    button[type="submit"]:active {
+      transform: translateY(0);
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+    
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    a:hover {
+      color: var(--primary-dark);
+    }
+    
+    a svg {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
+    
+    .message {
+      margin-bottom: 24px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+    
+    .message svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    
+    .success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #065f46;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .error {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #b91c1c;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const fileInput = document.getElementById('file');
+      const fileNameElement = document.getElementById('file-name');
+      
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          fileNameElement.textContent = 'Selected file: ' + this.files[0].name;
+          fileNameElement.style.display = 'block';
+        } else {
+          fileNameElement.style.display = 'none';
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        select, input[type="file"] {
-            padding: 5px;
-        }
-    </style>
+      });
+    });
+  </script>
 </head>
 <body>
-    <!-- Exact Dashboard Navbar -->
-    <div class="navbar">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/search">Search</a>
-        <a href="/upload">Upload</a>
-        <a href="/logout" style="float:right">Logout</a>
-    </div>
-
+  <div class="container">
     <h1>Upload Dataset</h1>
     
-    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>Select Table:</label>
-            <select name="table_name" required>
-                <option value="households">Households</option>
-                <option value="transactions">Transactions</option>
-                <option value="products">Products</option>
-            </select>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="message {{ category }}">
+            {% if category == 'success' %}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            {% else %}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            {% endif %}
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <form
+      action="{{ url_for('upload') }}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <div class="form-group">
+        <label for="table_name">Select Table</label>
+        <select id="table_name" name="table_name" required>
+          <option value="" disabled selected>Choose a table type</option>
+          <option value="households">Households</option>
+          <option value="transactions">Transactions</option>
+          <option value="products">Products</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="file">Upload CSV File</label>
+        <div class="file-input-container">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p>Drag & drop your CSV file or <strong>browse</strong></p>
+          <input type="file" id="file" name="file" accept=".csv" required />
         </div>
-
-        <div class="form-group">
-            <label>Select CSV File:</label>
-            <input type="file" name="file" required>
-        </div>
-
-        <input type="submit" value="Upload">
+        <p id="file-name" class="file-name"></p>
+      </div>
+      
+      <button type="submit">Upload Dataset</button>
     </form>
-
-    <p><a href="/dashboard/">Back to Dashboard</a></p>
+    
+    <p class="back-link">
+      <a href="{{ url_for('dashboard') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Dashboard
+      </a>
+    </p>
+  </div>
 </body>
 </html>

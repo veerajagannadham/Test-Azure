@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+  <title>Register</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -70,7 +70,8 @@
     }
     
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+    input[type="email"] {
       width: 100%;
       padding: 14px;
       border: 1px solid #ebcfb2;
@@ -82,7 +83,8 @@
     }
     
     input[type="text"]:focus,
-    input[type="password"]:focus {
+    input[type="password"]:focus,
+    input[type="email"]:focus {
       border-color: #e8a87c;
       outline: none;
       box-shadow: 0 0 0 3px rgba(232, 168, 124, 0.2);
@@ -114,7 +116,7 @@
       box-shadow: 0 2px 4px rgba(224, 122, 95, 0.2);
     }
     
-    .register-link {
+    .login-link {
       text-align: center;
       margin-top: 24px;
       font-size: 15px;
@@ -136,8 +138,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>User Login</h1>
-    <form action="{{ url_for('login') }}" method="POST">
+    <h1>User Registration</h1>
+    <form action="/" method="POST">
       <div class="form-group">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required />
@@ -148,11 +150,16 @@
         <input type="password" id="password" name="password" required />
       </div>
       
-      <input type="submit" value="Login" />
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      
+      <input type="submit" value="Register" />
     </form>
     
-    <p class="register-link">
-      Don't have an account? <a href="{{ url_for('home') }}">Register here</a>
+    <p class="login-link">
+      Already have an account? <a href="{{ url_for('login') }}">Login here</a>
     </p>
   </div>
 </body>

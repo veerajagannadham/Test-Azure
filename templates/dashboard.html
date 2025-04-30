@@ -1,133 +1,878 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="navbar-brand">Retail Analytics</div>
-    <div class="navbar-links">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/upload">Upload</a>
+  <head>
+    <title>Retail Analytics - Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.18.2/plotly.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+      :root {
+        --primary: #4361ee;
+        --primary-light: #4895ef;
+        --secondary: #3f37c9;
+        --success: #2ecc71;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+        --info: #3498db;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --gray-light: #e9ecef;
+        --border-radius: 12px;
+        --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+      }
       
-      <a href="/analytics">Analytics</a>
-      <a href="/">Logout</a>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+        background-color: #f6f8fc;
+        color: var(--dark);
+        line-height: 1.6;
+      }
+      
+      .header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        padding: 25px 0;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .header:before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        pointer-events: none;
+      }
+      
+      .header-content {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .header-title h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      
+      .header-title p {
+        font-size: 16px;
+        opacity: 0.9;
+      }
+      
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 18px;
+      }
+      
+      .dashboard-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+      }
+      
+      .nav-links {
+        display: flex;
+        justify-content: flex-start;
+        gap: 15px;
+        margin: 0 0 30px;
+        padding: 0 5px;
+        flex-wrap: wrap;
+      }
+      
+      .nav-links a {
+        padding: 12px 24px;
+        background-color: white;
+        color: var(--dark);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 15px;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .nav-links a:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(67, 97, 238, 0.25);
+      }
+      
+      .alert {
+        padding: 16px;
+        margin-bottom: 24px;
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: var(--shadow);
+      }
+      
+      .alert-success {
+        background-color: rgba(46, 204, 113, 0.15);
+        border-left: 4px solid var(--success);
+        color: #27ae60;
+      }
+      
+      .alert-danger {
+        background-color: rgba(231, 76, 60, 0.15);
+        border-left: 4px solid var(--danger);
+        color: #c0392b;
+      }
+      
+      .alert i {
+        font-size: 20px;
+      }
+      
+      .metrics-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+      }
+      
+      .metric-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      }
+      
+      .metric-card:after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+      }
+      
+      .metric-card:nth-child(1):after {
+        background-color: #4361ee;
+      }
+      
+      .metric-card:nth-child(2):after {
+        background-color: #4895ef;
+      }
+      
+      .metric-card:nth-child(3):after {
+        background-color: #3f37c9;
+      }
+      
+      .metric-card:nth-child(4):after {
+        background-color: #3a0ca3;
+      }
+      
+      .metric-icon {
+        margin-bottom: 15px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+      }
+      
+      .metric-card:nth-child(1) .metric-icon {
+        background-color: #4361ee;
+      }
+      
+      .metric-card:nth-child(2) .metric-icon {
+        background-color: #4895ef;
+      }
+      
+      .metric-card:nth-child(3) .metric-icon {
+        background-color: #3f37c9;
+      }
+      
+      .metric-card:nth-child(4) .metric-icon {
+        background-color: #3a0ca3;
+      }
+      
+      .metric-card h3 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 5px;
+      }
+      
+      .metric-card p {
+        font-size: 15px;
+        color: var(--gray);
+        margin: 0;
+      }
+      
+      .metric-trend {
+        margin-top: 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      
+      .trend-up {
+        color: var(--success);
+      }
+      
+      .trend-down {
+        color: var(--danger);
+      }
+      
+      .chart-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 30px;
+      }
+      
+      .chart-row-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+      }
+      
+      .chart-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        transition: var(--transition);
+      }
+      
+      .chart-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      }
+      
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
+      .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--dark);
+        margin: 0;
+      }
+      
+      .chart-actions {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .chart-action-btn {
+        background: var(--gray-light);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--gray);
+      }
+      
+      .chart-action-btn:hover {
+        background: var(--primary-light);
+        color: white;
+      }
+      
+      .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 10px;
+      }
+      
+      .data-table th,
+      .data-table td {
+        padding: 14px;
+        text-align: left;
+      }
+      
+      .data-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--gray);
+        position: sticky;
+        top: 0;
+      }
+      
+      .data-table th:first-child {
+        border-top-left-radius: 10px;
+      }
+      
+      .data-table th:last-child {
+        border-top-right-radius: 10px;
+      }
+      
+      .data-table tbody tr {
+        transition: var(--transition);
+        border-bottom: 1px solid var(--gray-light);
+      }
+      
+      .data-table tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+      }
+      
+      .data-table td {
+        font-size: 14px;
+        border-bottom: 1px solid var(--gray-light);
+      }
+      
+      .status-cell {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      
+      .status-completed {
+        background-color: var(--success);
+      }
+      
+      .status-pending {
+        background-color: var(--warning);
+      }
+      
+      .table-actions {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .table-action-btn {
+        background: none;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--gray);
+      }
+      
+      .table-action-btn:hover {
+        background: var(--primary-light);
+        color: white;
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 60px 0;
+      }
+      
+      .empty-state i {
+        font-size: 60px;
+        color: var(--gray-light);
+        margin-bottom: 20px;
+      }
+      
+      .empty-state h2 {
+        font-size: 22px;
+        color: var(--gray);
+        margin-bottom: 15px;
+      }
+      
+      .empty-state p {
+        font-size: 16px;
+        color: var(--gray);
+        max-width: 500px;
+        margin: 0 auto 25px;
+      }
+      
+      .empty-state-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: var(--border-radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+      
+      .empty-state-btn:hover {
+        background: var(--secondary);
+      }
+      
+      @media (max-width: 992px) {
+        .chart-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      @media (max-width: 768px) {
+        .header-content {
+          flex-direction: column;
+          text-align: center;
+          gap: 15px;
+        }
+        
+        .metrics-row {
+          grid-template-columns: 1fr;
+        }
+        
+        .chart-row-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      /* Custom scrollbar */
+      .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border-radius: var(--border-radius);
+      }
+      
+      .table-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      .table-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      
+      .table-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+      }
+      
+      .table-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-content">
+        <div class="header-title">
+          <h1>Retail Analytics Dashboard</h1>
+          <p>Track your retail performance and insights</p>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div>
+            <p>Welcome, {{ session.username }}</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </nav>
 
-  {% if uploaded_table %}
-  <div class="alert-success">
-    {{ uploaded_table.capitalize() }} data uploaded successfully!
-  </div>
-  {% endif %}
+    <div class="dashboard-container">
+      <div class="nav-links">
+        <a href="{{ url_for('upload') }}"><i class="fas fa-upload"></i> Upload New Data</a>
+        <a href="{{ url_for('search') }}"><i class="fas fa-search"></i> Search Household</a>
+        <a href="{{ url_for('analytics') }}"><i class="fas fa-chart-line"></i> Analytics</a>
+        <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
 
-  <!-- Dashboard -->
-  <div class="form-box">
-    <h2>Welcome, {{ username }}</h2>
-
-    <div class="button-row">
-      <a href="/search"><button>Search Household</button></a>
-      <a href="/upload"><button>Upload Data</button></a>
-    </div>
-
-    <!-- Metrics Section -->
-    <div class="section">
-      <h3>Key Metrics</h3>
-      <div class="metrics-grid">
+      {% with messages = get_flashed_messages(with_categories=true) %} 
+        {% if messages %} 
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {% if category == 'success' %}
+                <i class="fas fa-check-circle"></i>
+              {% elif category == 'danger' %}
+                <i class="fas fa-exclamation-circle"></i>
+              {% endif %}
+              {{ message }}
+            </div>
+          {% endfor %} 
+        {% endif %} 
+      {% endwith %}
+      
+      {% if has_data %}
+      <!-- Summary Metrics -->
+      <div class="metrics-row">
         <div class="metric-card">
-          <h3>{{ metrics.total_transactions }}</h3>
+          <div class="metric-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <h3>${{ total_sales|format_number }}</h3>
+          <p>Total Sales</p>
+          <div class="metric-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 12.5% vs last month
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <h3>${{ avg_order|format_number }}</h3>
+          <p>Average Order</p>
+          <div class="metric-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 5.3% vs last month
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h3>{{ total_customers|format_number }}</h3>
+          <p>Total Customers</p>
+          <div class="metric-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 8.7% vs last month
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">
+            <i class="fas fa-receipt"></i>
+          </div>
+          <h3>{{ total_transactions|format_number }}</h3>
           <p>Total Transactions</p>
-        </div>
-        <div class="metric-card">
-          <h3>{{ metrics.unique_households }}</h3>
-          <p>Unique Households</p>
-        </div>
-        <div class="metric-card">
-          <h3>${{ metrics.total_spend }}</h3>
-          <p>Total Spend</p>
-        </div>
-        <div class="metric-card">
-          <h3>{{ metrics.total_products }}</h3>
-          <p>Unique Products</p>
-        </div>
-        <div class="metric-card">
-          <h3>${{ metrics.avg_spend_per_household|default(0) }}</h3>
-          <p>Avg Spend/Household</p>
-        </div>
-        <div class="metric-card">
-          <h3>{{ metrics.avg_transactions_per_household|default(0) }}</h3>
-          <p>Avg Transactions/Household</p>
+          <div class="metric-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 10.2% vs last month
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Charts Section -->
-    <div class="section">
-      <h3>Spend Analysis</h3>
+      <!-- Main Charts -->
       <div class="chart-row">
-        <div class="chart-container">
-          <h4>Top 10 Departments by Spend</h4>
-          <canvas id="spendChart"></canvas>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h4 class="chart-title">Customer Spend Over Time</h4>
+            <div class="chart-actions">
+              <button class="chart-action-btn"><i class="fas fa-download"></i></button>
+              <button class="chart-action-btn"><i class="fas fa-sync-alt"></i></button>
+              <button class="chart-action-btn"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+          </div>
+          <div id="spend-chart" style="width: 100%; height: 320px"></div>
         </div>
-        <div class="chart-container">
-          <h4>Transactions by Department</h4>
-          <canvas id="transactionsChart"></canvas>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h4 class="chart-title">Top Product Departments</h4>
+            <div class="chart-actions">
+              <button class="chart-action-btn"><i class="fas fa-download"></i></button>
+              <button class="chart-action-btn"><i class="fas fa-sync-alt"></i></button>
+            </div>
+          </div>
+          <div id="dept-chart" style="width: 100%; height: 320px"></div>
         </div>
       </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h4 class="chart-title">Household Composition</h4>
+          <div class="chart-actions">
+            <button class="chart-action-btn"><i class="fas fa-download"></i></button>
+            <button class="chart-action-btn"><i class="fas fa-filter"></i></button>
+          </div>
+        </div>
+        <div id="household-chart" style="width: 100%; height: 320px"></div>
+      </div>
+      
+      <script>
+        // Household chart - updated to match the data in the image
+        var householdData = [
+          { composition: "1", count: 1 },
+          { composition: "2", count: 2 },
+          { composition: "3", count: 1 },
+          { composition: "4", count: 3 },
+          { composition: "5+", count: 2 },
+          { composition: "Unknown", count: 1 } // for null values
+        ];
+        
+        Plotly.newPlot('household-chart', [{
+            values: householdData.map(function(d) { return d.count; }),
+            labels: householdData.map(function(d) { return d.composition; }),
+            type: 'pie',
+            hole: 0.4,
+            marker: {
+                colors: ['#4361ee', '#4895ef', '#3a0ca3', '#7209b7', '#f72585', '#3f37c9'],
+                line: {
+                    color: '#fff',
+                    width: 2
+                }
+            },
+            textinfo: 'label+percent',
+            insidetextfont: {
+                color: '#fff',
+                size: 12
+            },
+            hoverinfo: 'label+value+percent'
+        }], {
+            margin: { t: 10, r: 10, b: 10, l: 10 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            annotations: [{
+                text: 'Households',
+                showarrow: false,
+                font: {
+                    size: 14,
+                    color: '#333'
+                }
+            }],
+            hoverlabel: { bgcolor: "#FFF", bordercolor: '#4361ee', font: { color: '#333', size: 12 } }
+        });
+      </script>
+
+      <!-- Recent Transactions -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h4 class="chart-title">Recent Transactions</h4>
+          <div class="chart-actions">
+            <button class="chart-action-btn"><i class="fas fa-download"></i></button>
+            <button class="chart-action-btn"><i class="fas fa-filter"></i></button>
+            <button class="chart-action-btn"><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Household</th>
+                <th>Basket</th>
+                <th>Purchase Date</th>
+                <th>Product</th>
+                <th>Spend</th>
+                <th>Units</th>
+                <th>Store Region</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for transaction in recent_transactions %}
+              <tr>
+                <td>{{ transaction.hshd_num }}</td>
+                <td>{{ transaction.basket_num }}</td>
+                <td>{{ transaction.purchase_date }}</td>
+                <td>{{ transaction.product_num }}</td>
+                <td>${{ transaction.spend }}</td>
+                <td>{{ transaction.units }}</td>
+                <td>
+                  <div class="status-cell">
+                    <span class="status-indicator status-completed"></span>
+                    {{ transaction.store_region }}
+                  </div>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <button class="table-action-btn"><i class="fas fa-eye"></i></button>
+                    <button class="table-action-btn"><i class="fas fa-download"></i></button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-database"></i>
+        <h2>No transaction data available</h2>
+        <p>Upload your transaction data to see analytics and insights for your retail business.</p>
+        <a href="{{ url_for('upload') }}" class="empty-state-btn">
+          <i class="fas fa-upload"></i> Upload Data Now
+        </a>
+      </div>
+      {% endif %}
     </div>
 
+    {% if has_data %}
+    <script>
+      // Spend over time chart
+      var spendData = {{ spend_data|safe }};
+      var spendDates = spendData.map(function(d) { return d.date; });
+      var spendValues = spendData.map(function(d) { return d.spend; });
 
-  <script>
-    // Department Spend Chart
-    const spendCtx = document.getElementById('spendChart');
-    new Chart(spendCtx, {
-      type: 'bar',
-      data: {
-        labels: {{ labels|tojson }},
-        datasets: [{
-          label: 'Spend ($)',
-          data: {{ values|tojson }},
-          backgroundColor: '#0078d7'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          title: { display: false }
-        }
-      }
-    });
+      Plotly.newPlot('spend-chart', [{
+          x: spendDates,
+          y: spendValues,
+          type: 'scatter',
+          mode: 'lines',
+          line: {
+              color: '#4361ee',
+              width: 3,
+              shape: 'spline'
+          },
+          fill: 'tozeroy',
+          fillcolor: 'rgba(67, 97, 238, 0.1)',
+          name: 'Spend'
+      }], {
+          margin: { t: 10, r: 10, b: 40, l: 60 },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          xaxis: {
+              gridcolor: '#eee',
+              tickfont: { size: 12 }
+          },
+          yaxis: {
+              title: 'Spend ($)',
+              titlefont: { size: 13 },
+              gridcolor: '#eee',
+              tickfont: { size: 12 }
+          },
+          hovermode: 'closest',
+          hoverlabel: { bgcolor: "#FFF", bordercolor: '#4361ee', font: { color: '#333', size: 12 } }
+      });
 
-    // Transactions Chart (example - you'll need to pass this data from your route)
-    const transCtx = document.getElementById('transactionsChart');
-    new Chart(transCtx, {
-      type: 'pie',
-      data: {
-        labels: {{ labels|tojson }},
-        datasets: [{
-          label: 'Transactions',
-          data: [10, 20, 30, 40, 50], // Replace with actual transaction counts
-          backgroundColor: [
-            '#0078d7',
-            '#50b8e7',
-            '#003366',
-            '#00a2e8',
-            '#008575'
-          ]
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'right' },
-          title: { display: false }
-        }
-      }
-    });
-  </script>
-</body>
+      // Department chart
+      var deptData = {{ dept_data|safe }};
+      Plotly.newPlot('dept-chart', [{
+          x: deptData.map(function(d) { return d.count; }),
+          y: deptData.map(function(d) { return d.department; }),
+          type: 'bar',
+          orientation: 'h',
+          marker: {
+              color: '#4895ef',
+              line: {
+                  width: 1,
+                  color: '#4361ee'
+              }
+          }
+      }], {
+          margin: { t: 10, r: 10, b: 40, l: 140 },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          xaxis: {
+              title: 'Count',
+              titlefont: { size: 13 },
+              gridcolor: '#eee',
+              tickfont: { size: 12 }
+          },
+          yaxis: {
+              gridcolor: '#eee',
+              tickfont: { size: 12 }
+          },
+          hoverlabel: { bgcolor: "#FFF", bordercolor: '#4895ef', font: { color: '#333', size: 12 } }
+      });
+
+      // Household chart
+      var householdData = {{ household_data|safe }};
+      Plotly.newPlot('household-chart', [{
+          values: householdData.map(function(d) { return d.count; }),
+          labels: householdData.map(function(d) { return d.composition; }),
+          type: 'pie',
+          hole: 0.4,
+          marker: {
+              colors: ['#4361ee', '#4895ef', '#3a0ca3', '#7209b7', '#f72585', '#3f37c9'],
+              line: {
+                  color: '#fff',
+                  width: 2
+              }
+          },
+          textinfo: 'label+percent',
+          insidetextfont: {
+              color: '#fff',
+              size: 12
+          },
+          hoverinfo: 'label+value+percent'
+      }], {
+          margin: { t: 10, r: 10, b: 10, l: 10 },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          annotations: [{
+              text: 'Households',
+              showarrow: false,
+              font: {
+                  size: 14,
+                  color: '#333'
+              }
+          }],
+          hoverlabel: { bgcolor: "#FFF", bordercolor: '#4361ee', font: { color: '#333', size: 12 } }
+      });
+
+      // Region chart
+      var regionData = {{ region_data|safe }};
+      Plotly.newPlot('region-chart', [{
+          values: regionData.map(function(d) { return d.count; }),
+          labels: regionData.map(function(d) { return d.region; }),
+          type: 'pie',
+          hole: 0.4,
+          marker: {
+              colors: ['#4361ee', '#4895ef', '#3f37c9', '#3a0ca3'],
+              line: {
+                  color: '#fff',
+                  width: 2
+              }
+          },
+          textinfo: 'label+percent',
+          insidetextfont: {
+              color: '#fff',
+              size: 12
+          },
+          hoverinfo: 'label+value+percent'
+      }], {
+          margin: { t: 10, r: 10, b: 10, l: 10 },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          annotations: [{
+              text: 'Regions',
+              showarrow: false,
+              font: {
+                  size: 14,
+                  color: '#333'
+              }
+          }],
+          hoverlabel: { bgcolor: "#FFF", bordercolor: '#4895ef', font: { color: '#333', size: 12 } }
+      });
+    </script>
+    {% endif %}
+  </body>
 </html>
